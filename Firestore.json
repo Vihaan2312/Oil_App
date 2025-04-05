@@ -1,1 +1,29 @@
-
+{
+  "project_info": {
+    "project_number": "934780491272",
+    "project_id": "oil-project-2",
+    "storage_bucket": "oil-project-2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934780491272:android:85761b5a24da42f2a1a3bd",
+        "android_client_info": {
+          "package_name": "OilProject_2.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBu94xul9DD1G8EJ5l66X3EzQrHNiDQ_m0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
