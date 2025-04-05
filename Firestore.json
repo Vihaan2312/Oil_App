@@ -1,29 +1,13 @@
 {
-  "project_info": {
-    "project_number": "934780491272",
-    "project_id": "oil-project-2",
-    "storage_bucket": "oil-project-2.firebasestorage.app"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:934780491272:android:85761b5a24da42f2a1a3bd",
-        "android_client_info": {
-          "package_name": "OilProject_2.com"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBu94xul9DD1G8EJ5l66X3EzQrHNiDQ_m0"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    }
-  ],
-  "configuration_version": "1"
+  "type": "service_account",
+  "project_id": "oil-project-2",
+  "private_key_id": "f6413e23369c82c68d02840613155ce7c0b83590",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDLS6plJXT00xw3\nRBd8B7c3uKkz/lv6ikz4Dbp8AM5LKFTU+8/Pkg14a/TxXTYM/G3Q5YehQQ8B30Ke\nl4OrbVhqq+YqmbW4YsjnWGBKe7meK42iUrg8feE0F5ZrZYWqmJyKwDiAycIEav78\nSYecc0ce3AK5ajw503od8KFUheo5tcceKJ487tZfdXl8kXDQ2Ie/PX3V2d4AvzCi\nD14t4qAbdX8wXK6PpZclaS7k9udMh4rcEoL+FV3r3hyWeZxmRDY0O8KqqfWAZjTD\nsUHJ2/FurvYvW+SNof0YFTkCoCuxwy1NwABuMl+c4vCTgswF4GX6BGZLPmO+4wgh\ngDJgoIFFAgMBAAECggEAB/GWIBYAGsbwWHp+fm1gwTp5JhvKJUvn07OES28j9czc\nJRG33jut72bXLzfoskY01k+kZpkqXcoxtLe6leVpFItQrEPNqtL1WGYxe7JCSlts\n++BGlwUw2mkSNXJwmtNpc9nXULT8MfxU/Vpe2a6peJu5NtyKAOpyCvR0TAoK4SQB\nkF1yyaKCY0T2fszlU4TzGLu8Xz20pKT2xg4UW/pQxqrS/x1jFLU+FrJAyUo2gLPC\ngyZFj1XhTgEmans+svDlN8w+ViYYjD1V5+XKDva9vFyt3vBTZRIqPEYAKXMxN+Sh\n1S2hj9hqgY3dP3fqbkrcnX7qdsUKaPjbfg29g2em4QKBgQDolgswfHSwKT6sBWWc\nRDe1UNS/5HcCSEGNBHWziwPjZ1TfNSkUBrmPHi4tLoYC6+uCWzJjHBZPgB/7MKg0\nGjolL4sGZamd/q1YlbDDKT9FjgR9xbray8GW3PlmNu8tqyaJ8mutEv8ytO0iHcuE\ncgJ1FEddAOwndRNDKhDYQdGkUQKBgQDfwscof9oQ10KJ+lKfJFFi4fR4InZhU1Rk\n4leyU/YruB255UU2MPwlfc7G6SyvXqrOlNLssFGIOeFPb66Zx2xNS8mp8/N+NeiQ\nNuVsrLHcd9eEB8ZK6cHx/daee/teL50MeY53TAHObFR+1ffeX9aE8mGWNY+UtVEH\n51VnXkEUtQKBgQCITqbwG4AnXYSlO+R42GHtmRmV/Ebix4XjJyHzvxzgQMa0qWsR\nmX9WKNHXGNThEXJMSzYUb3mDzgrwI2vwXQ6GjH5lmV72gTMGH3QgbCPwl3J6Y09G\nuvMRfx+Kj9dMZGmJntEL9X4qMW5n+B412Lsn8mKAVvIPjcVkL1r/4lMCgQKBgCRj\npsPdVvdaKoYJ4Znj7CBqorlO0XWueZEWhjCIGwatIJh0wra3bKokNZZ/oTa77IdA\nCLVZT0kaMJwci4aSufgwFRHAjJ6/4ZxicRklVJ+IFdJw+TyBm3rhTx/jBdQhZib7\nNcIM6FZLo8okvfS6HUbtrBUjjMAgZJcmdesjlu3pAoGAdpQutZ/RpPZRdfhT4yFf\nta1V6WWL+su6GE8GrfQ9jT5nMQmo/EMvHAUS3QqF/QIIOsF11eQMV8znDKEG/tnL\nkW8P6MLZjh+fN6385hnZosqgh/ye7TdOafuT9Jv8s4XjgTJxq7N7ZuL/lgOPmNPA\n2FxLTtLqhmBLQa8ejj++7IQ=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-5mgkx@oil-project-2.iam.gserviceaccount.com",
+  "client_id": "106326973108327848239",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-5mgkx%40oil-project-2.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
 }
