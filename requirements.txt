@@ -3,4 +3,3 @@ numpy
 pandas
 streamlit==1.40.0
 firestore
-plotly.express
