@@ -2,9 +2,11 @@ import streamlit as st
 from google.cloud import firestore
 import pandas as pd
 from datetime import datetime
+import json
 
-# Firestore database setup
-db = firestore.Client.from_service_account_json("Firestore.json")
+# Load service account from secrets
+key_dict = st.secrets["firebase_service_account"]
+db = firestore.Client.from_service_account_info(key_dict)
 
 # Oil prices dictionary
 oil_prices = {
