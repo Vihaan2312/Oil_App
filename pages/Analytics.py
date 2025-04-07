@@ -2,11 +2,8 @@ import streamlit as st
 from google.cloud import firestore
 import pandas as pd
 import plotly.express as px
-import json
 
-# Load service account from secrets
-key_dict = st.secrets["firebase_service_account"]
-db = firestore.Client.from_service_account_info(key_dict)
+db = firestore.Client.from_service_account_info("Firestore.json")
 
 st.title("📊 Sales Analytics Dashboard")
 
