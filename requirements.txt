@@ -2,5 +2,5 @@ altair==4.2.2
 numpy
 pandas
 streamlit==1.40.0
-firestore
+google-cloud-firestore
 plotly.express
