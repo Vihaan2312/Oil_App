@@ -4,9 +4,7 @@ import pandas as pd
 import datetime as dt
 import json
 
-# Load service account from secrets
-key_dict = st.secrets["firebase_service_account"]
-db = firestore.Client.from_service_account_info(key_dict)
+db = firestore.Client.from_service_account_info("Firestore.json")
 
 # Fetch existing customers from Firestore
 profiles_ref = db.collection("Profiles").stream()
