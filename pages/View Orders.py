@@ -3,7 +3,7 @@ from google.cloud import firestore
 import pandas as pd
 from datetime import datetime
 
-db = firestore.Client.from_service_account_info("Firestore.json")
+db = firestore.Client.from_service_account_json("Firestore.json")
 
 # Oil prices dictionary
 oil_prices = {
