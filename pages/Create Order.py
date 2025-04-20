@@ -4,6 +4,7 @@ import pandas as pd
 import datetime as dt
 import json
 
+# Initialize Firestore client
 db = firestore.Client.from_service_account_json("Firestore.json")
 
 # Fetch existing customers from Firestore
@@ -12,7 +13,7 @@ customer_data = {doc.id: doc.to_dict() for doc in profiles_ref}
 customer_names = [data["Name"] for data in customer_data.values()]
 customer_phones = list(customer_data.keys())  # Phone numbers as document IDs
 
-#  Smart Name Input with Auto-Suggestions
+# Smart Name Input with Auto-Suggestions
 name_input = st.text_input("Enter Customer Name")
 
 # Filter matches dynamically
@@ -34,16 +35,20 @@ phone = st.text_input("Phone no.", value=phone)
 
 # Order details
 date = st.date_input("Date")
+time = st.time_input("Time", value=dt.datetime.now().time())  # Default to current time
+
 cq = st.number_input("Coconut Quantity")
 gq = st.number_input("Groundnut Quantity")
 mq = st.number_input("Mustard Quantity")
 sq = st.number_input("Sesame Quantity")
 aq = st.number_input("Almond Quantity")
+
 st.divider()
 
+# Display order summary
 st.write("**Name:**", name)
 st.write("**Phone number:**", phone)
-st.write("**Date:**", str(date))
+st.write("**Date & Time:**", f"{date} {time}")
 
 df = pd.DataFrame([
     {"Oil": "Coconut", "Rate": "₹400/- per liter", "Quantity": cq, "Total": f"₹{cq*400}/-"},
@@ -55,8 +60,9 @@ df = pd.DataFrame([
 ])
 st.write(df)
 
+# Submit button logic
 if st.button("Submit"):
-    date_timestamp = dt.datetime.combine(date, dt.datetime.min.time())
+    date_time = dt.datetime.combine(date, time)
 
     # Generate new order ID
     m = max([int(i.id) for i in db.collection("Orders").stream()] + [0])
@@ -69,7 +75,7 @@ if st.button("Submit"):
         "MQ": mq,
         "SQ": sq,
         "Phone": phone,
-        "Date": date_timestamp,
+        "Date": date_time,
         "Name": name_input,
         "Status": 1
     })
