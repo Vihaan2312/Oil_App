@@ -3,7 +3,7 @@ from google.cloud import firestore
 import pandas as pd
 import datetime as dt
 
-
+# Initialize Firestore client
 db = firestore.Client.from_service_account_json("Firestore.json")
 
 # Oil prices dictionary
@@ -15,7 +15,7 @@ oil_prices = {
     "Almond": 2500
 }
 
-# Streamlit session state management
+# Initialize session state variables
 if "id" not in st.session_state:
     st.session_state["id"] = 0
 if "view" not in st.session_state:
@@ -23,12 +23,13 @@ if "view" not in st.session_state:
 if "update" not in st.session_state:
     st.session_state["update"] = False
 
+# Containers for dynamic UI updates
 home_empty = st.empty()
 view_empty = st.empty()
 update_empty = st.empty()
 
 # -------------------------
-#  Update Mode
+# Update Mode: Edit order details
 # -------------------------
 if st.session_state["update"]:
     view_empty.empty()
@@ -42,95 +43,125 @@ if st.session_state["update"]:
             # Editable fields
             name = st.text_input("Name:", rec.get("Name", ""))
             phone = st.number_input("Phone:", value=int(rec.get("Phone", 0)), step=1)
-            date = st.date_input("Date:", rec.get("Date").date())
-            time = st.time_input("Time", rec.get("Date").time())
+            date = st.date_input("Date:", rec.get("Date").date() if rec.get("Date") else dt.date.today())
+            time = st.time_input("Time:", rec.get("Date").time() if rec.get("Date") else dt.datetime.now().time())
 
-          # Status Dictionary
+            # Status dictionaries
             status_dict = {1: "Ordered", 2: "Delivered", 3: "Payment Done"}
-            status_reverse_dict = {"Ordered": 1, "Delivered": 2, "Payment Done": 3}
+            status_reverse_dict = {v: k for k, v in status_dict.items()}
 
-            # Get current status
             current_status = status_dict.get(rec.get("Status", 1), "Ordered")
-
-            # Determine next possible status
             next_status = {
                 "Ordered": "Delivered",
                 "Delivered": "Payment Done",
-                "Payment Done": None  # No further updates allowed
+                "Payment Done": None
             }.get(current_status, None)
 
             st.write("**Order Status:**", current_status)
 
-            if next_status:  # Show next status if available
+            if next_status:
                 if st.button(f"Mark as {next_status}"):
                     db.collection("Orders").document(str(st.session_state["id"])).update({
                         "Status": status_reverse_dict[next_status]
                     })
                     st.rerun()
 
-            # Create Editable DataFrame
+            # Prepare editable dataframe for oil quantities
             df = pd.DataFrame([
                 {"Oil": "Coconut", "Rate": "₹400", "Quantity": rec.get("CQ", 0)},
                 {"Oil": "Groundnut", "Rate": "₹350", "Quantity": rec.get("GQ", 0)},
                 {"Oil": "Mustard", "Rate": "₹350", "Quantity": rec.get("MQ", 0)},
                 {"Oil": "Sesame", "Rate": "₹450", "Quantity": rec.get("SQ", 0)},
-                {"Oil": "Almond", "Rate": "₹2500", "Quantity": rec.get("AQ", 0)}
+                {"Oil": "Almond", "Rate": "₹2500", "Quantity": rec.get("AQ", 0)},
             ])
 
-            # Editable DataFrame
             edited_df = st.data_editor(df, key="order_edit", column_config={"Quantity": {"editable": True}})
 
-            # Calculate updated total price dynamically
+            # Calculate total price
             edited_df["Total"] = edited_df.apply(lambda row: row["Quantity"] * oil_prices[row["Oil"]], axis=1)
-
-            # Display updated DataFrame with recalculated totals
             st.dataframe(edited_df)
 
-            # Display Total Price
             total_price = edited_df["Total"].sum()
             st.write(f"**Total Price: ₹{total_price}/-**")
 
-            # Save Button
+            # Save button updates Firestore
             if st.button("Save"):
                 db.collection("Orders").document(str(st.session_state["id"])).update({
                     "Name": name,
                     "Phone": phone,
-                    "Date": dt.datetime.combine(date, time),  # Convert date to timestamp
-                    "CQ": edited_df.loc[0, "Quantity"],
-                    "GQ": edited_df.loc[1, "Quantity"],
-                    "MQ": edited_df.loc[2, "Quantity"],
-                    "SQ": edited_df.loc[3, "Quantity"],
-                    "AQ": edited_df.loc[4, "Quantity"]
+                    "Date": dt.datetime.combine(date, time),
+                    "CQ": int(edited_df.loc[0, "Quantity"]),
+                    "GQ": int(edited_df.loc[1, "Quantity"]),
+                    "MQ": int(edited_df.loc[2, "Quantity"]),
+                    "SQ": int(edited_df.loc[3, "Quantity"]),
+                    "AQ": int(edited_df.loc[4, "Quantity"])
                 })
-
                 st.session_state["update"] = False
                 st.session_state["view"] = True
                 st.rerun()
 
 # -------------------------
-#  Home Page (List of Orders)
+# Home Page: List and filter orders
 # -------------------------
 if not st.session_state["update"] and not st.session_state["view"]:
     with home_empty.container():
-        for i in db.collection("Orders").stream():
-            doc = i.to_dict()
-            status_dict = {1: "Ordered", 2: "Delivered", 3: "Payment Done"}
+        st.subheader("📋 Order List")
+
+        # Filters
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            status_filter = st.selectbox("Filter by Status", ["All", "Ordered", "Delivered", "Payment Done"])
+        with col2:
+            name_filter = st.text_input("Search by Name").strip().lower()
+        with col3:
+            date_filter = st.date_input("Filter by Date (Optional)", value=None)
+
+        st.markdown("---")
+
+        # Fetch orders from Firestore
+        orders = []
+        for doc in db.collection("Orders").stream():
+            data = doc.to_dict()
+            data["id"] = doc.id
+            orders.append(data)
+
+        # Status lookup
+        status_dict = {1: "Ordered", 2: "Delivered", 3: "Payment Done"}
+
+        # Filter orders
+        filtered_orders = []
+        for doc in orders:
             status = status_dict.get(doc.get("Status", 1), "Unknown")
+            name = doc.get("Name", "").lower()
+            order_date = doc.get("Date")
 
-            with st.container(border=True):
-                st.subheader(f"Order ID: {i.id}")
-                st.write("**Name:**", doc.get("Name", ""))
-                st.write("**Phone:**", str(int(doc.get("Phone", 0))))
-                st.write("**Date:**", str(doc.get("Date").date() if doc.get("Date") else "N/A"))
-                st.write("**Status:**", status)
+            if status_filter != "All" and status != status_filter:
+                continue
+            if name_filter and name_filter not in name:
+                continue
+            if date_filter and order_date and order_date.date() != date_filter:
+                continue
+            filtered_orders.append((doc, status))
 
-                if st.button("View", key=i.id):
-                    st.session_state["id"] = i.id
-                    st.session_state["view"] = True
-                    st.rerun()
+        # Display orders
+        if not filtered_orders:
+            st.info("No orders found with the selected filters.")
+        else:
+            for doc, status in filtered_orders:
+                with st.container(border=True):
+                    st.subheader(f"Order ID: {doc['id']}")
+                    st.write("**Name:**", doc.get("Name", ""))
+                    st.write("**Phone:**", str(int(doc.get("Phone", 0))))
+                    st.write("**Date:**", str(doc.get("Date").date() if doc.get("Date") else "N/A"))
+                    st.write("**Status:**", status)
+
+                    if st.button("View", key=f"view_{doc['id']}"):
+                        st.session_state["id"] = doc["id"]
+                        st.session_state["view"] = True
+                        st.rerun()
 
 # -------------------------
-#  View Mode
+# View Mode: Show order details
 # -------------------------
 if st.session_state["view"]:
     home_empty.empty()
@@ -147,55 +178,122 @@ if st.session_state["view"]:
             st.write("**Date:**", str(rec.get("Date").date() if rec.get("Date") else "N/A"))
             st.write("**Time:**", str(rec.get("Date").time() if rec.get("Date") else "N/A"))
 
-            # Status Dictionary
             status_dict = {1: "Ordered", 2: "Delivered", 3: "Payment Done"}
-            status_reverse_dict = {"Ordered": 1, "Delivered": 2, "Payment Done": 3}
+            status_reverse_dict = {v: k for k, v in status_dict.items()}
 
-            # Get current status
             current_status = status_dict.get(rec.get("Status", 1), "Ordered")
-
-            # Determine next possible status
             next_status = {
                 "Ordered": "Delivered",
                 "Delivered": "Payment Done",
-                "Payment Done": None  # No further updates allowed
+                "Payment Done": None
             }.get(current_status, None)
 
             st.write("**Order Status:**", current_status)
 
-            if next_status:  # Show next status if available
+            if next_status:
                 if st.button(f"Mark as {next_status}"):
                     db.collection("Orders").document(str(st.session_state["id"])).update({
                         "Status": status_reverse_dict[next_status]
                     })
                     st.rerun()
 
-            # Create order details DataFrame
+            # Show order details in dataframe
             df = pd.DataFrame([
                 {"Oil": "Coconut", "Rate": "₹400", "Quantity": rec.get("CQ", 0), "Total": rec.get("CQ", 0) * 400},
                 {"Oil": "Groundnut", "Rate": "₹350", "Quantity": rec.get("GQ", 0), "Total": rec.get("GQ", 0) * 350},
                 {"Oil": "Mustard", "Rate": "₹350", "Quantity": rec.get("MQ", 0), "Total": rec.get("MQ", 0) * 350},
                 {"Oil": "Sesame", "Rate": "₹450", "Quantity": rec.get("SQ", 0), "Total": rec.get("SQ", 0) * 450},
-                {"Oil": "Almond", "Rate": "₹2500", "Quantity": rec.get("AQ", 0), "Total": rec.get("AQ", 0) * 2500}
+                {"Oil": "Almond", "Rate": "₹2500", "Quantity": rec.get("AQ", 0), "Total": rec.get("AQ", 0) * 2500},
             ])
 
-            # Calculate grand total
             total_price = df["Total"].sum()
             total_quantity = df["Quantity"].sum()
 
-            # Add a row for total price
             total_row = pd.DataFrame([{"Oil": "Total", "Rate": "", "Quantity": total_quantity, "Total": f"₹{total_price}/-"}])
             df = pd.concat([df, total_row], ignore_index=True)
 
-            # Display DataFrame
             st.dataframe(df)
 
-            if st.button("Close❌"):
-                st.session_state["view"] = False
-                st.session_state["id"] = 0
-                st.rerun()
+            # Buttons to close or update
+            # Buttons to close or update side by side
+            col1, col2, col3 = st.columns([0.8, 0.9, 3.9])
 
-            if st.button("Update📝"):
-                st.session_state["update"] = True
-                st.session_state["view"] = False
-                st.rerun()
+            with col1:
+                if st.button("Close ❌"):
+                    st.session_state["view"] = False
+                    st.session_state["id"] = 0
+                    st.rerun()
+
+            with col2:
+                if current_status == "Ordered":
+                    if st.button("Update 📝"):
+                        st.session_state["update"] = True
+                        st.session_state["view"] = False
+                        st.rerun()
+
+            if st.button("Generate Invoice"):
+                from fpdf import FPDF
+                import os
+
+                # Define the folder where invoices will be saved
+                folder = "invoices"
+                os.makedirs(folder, exist_ok=True)  # Create folder if it doesn't exist
+
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.set_font("Arial", size=12)
+
+                pdf.cell(200, 10, txt=f"Invoice for Order ID: {st.session_state['id']}", ln=True, align="C")
+                pdf.ln(10)
+
+                pdf.cell(200, 10, txt=f"Name: {rec.get('Name', '')}", ln=True)
+                pdf.cell(200, 10, txt=f"Phone: {str(int(rec.get('Phone', 0)))}", ln=True)
+                pdf.cell(200, 10, txt=f"Date: {str(rec.get('Date').date())}", ln=True)
+                pdf.cell(200, 10, txt=f"Time: {str(rec.get('Date').time())}", ln=True)
+                pdf.cell(200, 10, txt=f"Status: {current_status}", ln=True)
+
+                pdf.ln(10)
+                pdf.set_font("Arial", "B", 12)
+                pdf.cell(50, 10, "Oil", 1)
+                pdf.cell(30, 10, "Rate", 1)
+                pdf.cell(30, 10, "Qty", 1)
+                pdf.cell(40, 10, "Total", 1)
+                pdf.ln()
+                pdf.set_font("Arial", size=12)
+                total_price = 0
+                for oil, rate_key, qty_key in [
+                    ("Coconut", 400, "CQ"),
+                    ("Groundnut", 350, "GQ"),
+                    ("Mustard", 350, "MQ"),
+                    ("Sesame", 450, "SQ"),
+                    ("Almond", 2500, "AQ"),
+                ]:
+                    qty = rec.get(qty_key, 0)
+                    rate = rate_key
+                    total = qty * rate
+                    total_price += total
+
+                    pdf.cell(50, 10, oil, 1)
+                    pdf.cell(30, 10, f"Rs. {rate}", 1)
+                    pdf.cell(30, 10, str(qty), 1)
+                    pdf.cell(40, 10, f"Rs. {total}", 1)
+                    pdf.ln()
+
+                    pdf.set_font("Arial", "B", 12)
+                    pdf.cell(110, 10, "Total", 1)
+                    pdf.cell(40, 10, f"Rs. {total_price}", 1)
+
+                    # Save and display
+                    file_path = os.path.join(folder, f"Invoice_{st.session_state['id']}.pdf")
+                    pdf.output(file_path)
+
+                    with open(file_path, "rb") as f:
+                        st.download_button(
+                            label="📄 Download Invoice",
+                            data=f,
+                            file_name=f"Invoice_{st.session_state['id']}.pdf",
+                            mime="application/pdf",
+                            key="123456789009876543212345678909876543212345678987654321234567876543erfghjuy6trfghytresdftyujyr"
+                        )
+
+                    os.remove(file_path)
