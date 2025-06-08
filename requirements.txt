@@ -3,4 +3,5 @@ numpy
 pandas
 streamlit==1.40.0
 google-cloud-firestore
+fpdf
 plotly.express
