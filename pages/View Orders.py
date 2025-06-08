@@ -1,7 +1,8 @@
 import streamlit as st
 from google.cloud import firestore
 import pandas as pd
-from datetime import datetime
+import datetime as dt
+
 
 db = firestore.Client.from_service_account_json("Firestore.json")
 
@@ -41,7 +42,8 @@ if st.session_state["update"]:
             # Editable fields
             name = st.text_input("Name:", rec.get("Name", ""))
             phone = st.number_input("Phone:", value=int(rec.get("Phone", 0)), step=1)
-            date = st.date_input("Date:", rec.get("Date").date() if rec.get("Date") else datetime.today())
+            date = st.date_input("Date:", rec.get("Date").date())
+            time = st.time_input("Time", rec.get("Date").time())
 
           # Status Dictionary
             status_dict = {1: "Ordered", 2: "Delivered", 3: "Payment Done"}
@@ -93,7 +95,7 @@ if st.session_state["update"]:
                 db.collection("Orders").document(str(st.session_state["id"])).update({
                     "Name": name,
                     "Phone": phone,
-                    "Date": datetime.combine(date, datetime.min.time()),  # Convert date to timestamp
+                    "Date": dt.datetime.combine(date, time),  # Convert date to timestamp
                     "CQ": edited_df.loc[0, "Quantity"],
                     "GQ": edited_df.loc[1, "Quantity"],
                     "MQ": edited_df.loc[2, "Quantity"],
@@ -143,6 +145,7 @@ if st.session_state["view"]:
             st.write("**Name:**", rec.get("Name", ""))
             st.write("**Phone:**", str(int(rec.get("Phone", 0))))
             st.write("**Date:**", str(rec.get("Date").date() if rec.get("Date") else "N/A"))
+            st.write("**Time:**", str(rec.get("Date").time() if rec.get("Date") else "N/A"))
 
             # Status Dictionary
             status_dict = {1: "Ordered", 2: "Delivered", 3: "Payment Done"}

@@ -35,7 +35,7 @@ phone = st.text_input("Phone no.", value=phone)
 
 # Order details
 date = st.date_input("Date")
-time = st.time_input("Time", value=dt.datetime.now().time())  # Default to current time
+time = st.time_input("Time")  # Default to current time
 
 cq = st.number_input("Coconut Quantity")
 gq = st.number_input("Groundnut Quantity")
@@ -63,7 +63,6 @@ st.write(df)
 # Submit button logic
 if st.button("Submit"):
     date_time = dt.datetime.combine(date, time)
-
     # Generate new order ID
     m = max([int(i.id) for i in db.collection("Orders").stream()] + [0])
 
