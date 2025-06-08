@@ -8,7 +8,7 @@ db = firestore.Client.from_service_account_json("Firestore.json")
 
 # Oil prices dictionary
 oil_prices = {
-    "Coconut": 400,
+    "Coconut": 450,
     "Groundnut": 350,
     "Mustard": 350,
     "Sesame": 450,
@@ -68,7 +68,7 @@ if st.session_state["update"]:
 
             # Prepare editable dataframe for oil quantities
             df = pd.DataFrame([
-                {"Oil": "Coconut", "Rate": "₹400", "Quantity": rec.get("CQ", 0)},
+                {"Oil": "Coconut", "Rate": "₹450", "Quantity": rec.get("CQ", 0)},
                 {"Oil": "Groundnut", "Rate": "₹350", "Quantity": rec.get("GQ", 0)},
                 {"Oil": "Mustard", "Rate": "₹350", "Quantity": rec.get("MQ", 0)},
                 {"Oil": "Sesame", "Rate": "₹450", "Quantity": rec.get("SQ", 0)},
@@ -238,7 +238,7 @@ if st.session_state["view"]:
 
             # Show order details in dataframe
             df = pd.DataFrame([
-                {"Oil": "Coconut", "Rate": "₹400", "Quantity": rec.get("CQ", 0), "Total": rec.get("CQ", 0) * 400},
+                {"Oil": "Coconut", "Rate": "₹450", "Quantity": rec.get("CQ", 0), "Total": rec.get("CQ", 0) * 450},
                 {"Oil": "Groundnut", "Rate": "₹350", "Quantity": rec.get("GQ", 0), "Total": rec.get("GQ", 0) * 350},
                 {"Oil": "Mustard", "Rate": "₹350", "Quantity": rec.get("MQ", 0), "Total": rec.get("MQ", 0) * 350},
                 {"Oil": "Sesame", "Rate": "₹450", "Quantity": rec.get("SQ", 0), "Total": rec.get("SQ", 0) * 450},
@@ -301,7 +301,7 @@ if st.session_state["view"]:
                 pdf.set_font("Arial", size=12)
                 total_price = 0
                 for oil, rate_key, qty_key in [
-                    ("Coconut", 400, "CQ"),
+                    ("Coconut", 450, "CQ"),
                     ("Groundnut", 350, "GQ"),
                     ("Mustard", 350, "MQ"),
                     ("Sesame", 450, "SQ"),

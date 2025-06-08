@@ -17,7 +17,7 @@ df = pd.DataFrame(orders)
 
 # Ensure columns exist
 df["Date"] = pd.to_datetime(df["Date"])
-df["Total Sales"] = (df["CQ"] * 400) + (df["GQ"] * 350) + (df["MQ"] * 350) + (df["SQ"] * 450) + (df["AQ"] * 2500)
+df["Total Sales"] = (df["CQ"] * 450) + (df["GQ"] * 350) + (df["MQ"] * 350) + (df["SQ"] * 450) + (df["AQ"] * 2500)
 
 # Total Orders & Sales
 st.metric("📦 Total Orders", len(df))

@@ -51,12 +51,12 @@ st.write("**Phone number:**", phone)
 st.write("**Date & Time:**", f"{date} {time}")
 
 df = pd.DataFrame([
-    {"Oil": "Coconut", "Rate": "₹400/- per liter", "Quantity": cq, "Total": f"₹{cq*400}/-"},
+    {"Oil": "Coconut", "Rate": "₹450/- per liter", "Quantity": cq, "Total": f"₹{cq*450}/-"},
     {"Oil": "Groundnut", "Rate": "₹350/- per liter", "Quantity": gq, "Total": f"₹{gq*350}/-"},
     {"Oil": "Mustard", "Rate": "₹350/- per liter", "Quantity": mq, "Total": f"₹{mq*350}/-"},
     {"Oil": "Sesame", "Rate": "₹450/- per liter", "Quantity": sq, "Total": f"₹{sq*450}/-"},
     {"Oil": "Almond", "Rate": "₹625/- per 250ml", "Quantity": aq, "Total": f"₹{aq*2500}/-"},
-    {"Oil": "Total:", "Quantity": cq+gq+mq+sq+aq, "Total": f"₹{(aq*2500)+(cq*400)+(gq*350)+(mq*350)+(sq*450)}/-"}
+    {"Oil": "Total:", "Quantity": cq+gq+mq+sq+aq, "Total": f"₹{(aq*2500)+(cq*450)+(gq*350)+(mq*350)+(sq*450)}/-"}
 ])
 st.write(df)
 
