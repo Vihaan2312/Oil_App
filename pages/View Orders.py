@@ -116,8 +116,6 @@ if not st.session_state["update"] and not st.session_state["view"]:
         with col3:
             date_filter = st.date_input("Filter by Date (Optional)", value=None)
 
-        st.markdown("---")
-
         # Fetch orders from Firestore
         orders = []
         for doc in db.collection("Orders").stream():
@@ -143,6 +141,44 @@ if not st.session_state["update"] and not st.session_state["view"]:
                 continue
             filtered_orders.append((doc, status))
 
+        if filtered_orders:
+            export_data = []
+            for doc, status in filtered_orders:
+                export_data.append({
+                    "Order ID": doc["id"],
+                    "Name": doc.get("Name", ""),
+                    "Phone": doc.get("Phone", ""),
+                    "Date": doc.get("Date").strftime("%Y-%m-%d") if doc.get("Date") else "",
+                    "Time": doc.get("Date").time(),
+                    "Status": status,
+                    "Coconut Qty": doc.get("CQ", 0),
+                    "Groundnut Qty": doc.get("GQ", 0),
+                    "Mustard Qty": doc.get("MQ", 0),
+                    "Sesame Qty": doc.get("SQ", 0),
+                    "Almond Qty": doc.get("AQ", 0),
+                })
+
+            df_export = pd.DataFrame(export_data)
+
+            from io import BytesIO
+            import xlsxwriter
+
+            output = BytesIO()
+            writer = pd.ExcelWriter(output, engine='xlsxwriter')
+            df_export.to_excel(writer, index=False, sheet_name='Filtered Orders')
+            writer.close()
+            output.seek(0)
+
+            st.download_button(
+                label="📥 Export Filtered Orders to Excel",
+                data=output,
+                file_name="Orders.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        st.markdown("---")
+
+
+
         # Display orders
         if not filtered_orders:
             st.info("No orders found with the selected filters.")
@@ -159,6 +195,9 @@ if not st.session_state["update"] and not st.session_state["view"]:
                         st.session_state["id"] = doc["id"]
                         st.session_state["view"] = True
                         st.rerun()
+                # Export to Excel
+        
+
 
 # -------------------------
 # View Mode: Show order details
