@@ -76,13 +76,17 @@ if st.session_state["update"]:
             ])
 
             edited_df = st.data_editor(df, key="order_edit", column_config={"Quantity": {"editable": True}})
+            dc = st.number_input("Delivery Charge", value=rec.get("DC"), step=1)
 
             # Calculate total price
             edited_df["Total"] = edited_df.apply(lambda row: row["Quantity"] * oil_prices[row["Oil"]], axis=1)
-            st.dataframe(edited_df)
-
+            DC_df = pd.DataFrame([{"Oil": "Delivery Charge", "Total": dc}])
+            edited_df = pd.concat([edited_df, DC_df], ignore_index=True)
             total_price = edited_df["Total"].sum()
-            st.write(f"**Total Price: ₹{total_price}/-**")
+            total_quantity = edited_df["Quantity"].sum()
+            total_df = pd.DataFrame([{"Oil": "Total", "Quantity": total_quantity,"Total": f"₹{total_price}/-"}])
+            edited_df = pd.concat([edited_df, total_df], ignore_index=True)
+            st.dataframe(edited_df)
 
             # Save button updates Firestore
             if st.button("Save"):
@@ -94,7 +98,8 @@ if st.session_state["update"]:
                     "GQ": int(edited_df.loc[1, "Quantity"]),
                     "MQ": int(edited_df.loc[2, "Quantity"]),
                     "SQ": int(edited_df.loc[3, "Quantity"]),
-                    "AQ": int(edited_df.loc[4, "Quantity"])
+                    "AQ": int(edited_df.loc[4, "Quantity"]),
+                    "DC": int(dc)
                 })
                 st.session_state["update"] = False
                 st.session_state["view"] = True
@@ -243,6 +248,7 @@ if st.session_state["view"]:
                 {"Oil": "Mustard", "Rate": "₹350", "Quantity": rec.get("MQ", 0), "Total": rec.get("MQ", 0) * 350},
                 {"Oil": "Sesame", "Rate": "₹450", "Quantity": rec.get("SQ", 0), "Total": rec.get("SQ", 0) * 450},
                 {"Oil": "Almond", "Rate": "₹2500", "Quantity": rec.get("AQ", 0), "Total": rec.get("AQ", 0) * 2500},
+                {"Oil": "Delivery Charge", "Total": rec.get("DC")},
             ])
 
             total_price = df["Total"].sum()
@@ -288,8 +294,6 @@ if st.session_state["view"]:
                 pdf.cell(200, 10, txt=f"Name: {rec.get('Name', '')}", ln=True)
                 pdf.cell(200, 10, txt=f"Phone: {str(int(rec.get('Phone', 0)))}", ln=True)
                 pdf.cell(200, 10, txt=f"Date: {str(rec.get('Date').date())}", ln=True)
-                pdf.cell(200, 10, txt=f"Time: {str(rec.get('Date').time())}", ln=True)
-                pdf.cell(200, 10, txt=f"Status: {current_status}", ln=True)
 
                 pdf.ln(10)
                 pdf.set_font("Arial", "B", 12)
@@ -298,8 +302,10 @@ if st.session_state["view"]:
                 pdf.cell(30, 10, "Qty", 1)
                 pdf.cell(40, 10, "Total", 1)
                 pdf.ln()
+
                 pdf.set_font("Arial", size=12)
                 total_price = 0
+
                 for oil, rate_key, qty_key in [
                     ("Coconut", 450, "CQ"),
                     ("Groundnut", 350, "GQ"),
@@ -318,21 +324,31 @@ if st.session_state["view"]:
                     pdf.cell(40, 10, f"Rs. {total}", 1)
                     pdf.ln()
 
-                    pdf.set_font("Arial", "B", 12)
-                    pdf.cell(110, 10, "Total", 1)
-                    pdf.cell(40, 10, f"Rs. {total_price}", 1)
+                # Delivery charge
+                delivery_charge = rec.get("DC", 0)
 
-                    # Save and display
-                    file_path = os.path.join(folder, f"Invoice_{st.session_state['id']}.pdf")
-                    pdf.output(file_path)
+                pdf.set_font("Arial", size=12)
+                pdf.cell(110, 10, "Delivery Charge", 1)
+                pdf.cell(40, 10, f"Rs. {delivery_charge}", 1)
+                pdf.ln()
 
-                    with open(file_path, "rb") as f:
-                        st.download_button(
-                            label="📄 Download Invoice",
-                            data=f,
-                            file_name=f"Invoice_{st.session_state['id']}.pdf",
-                            mime="application/pdf",
-                            key="123456789009876543212345678909876543212345678987654321234567876543erfghjuy6trfghytresdftyujyr"
-                        )
+                # Grand Total
+                grand_total = total_price + delivery_charge
+                pdf.set_font("Arial", "B", 12)
+                pdf.cell(110, 10, "Grand Total", 1)
+                pdf.cell(40, 10, f"Rs. {grand_total}", 1)
 
-                    os.remove(file_path)
+
+                # Save and show download button
+                file_path = os.path.join(folder, f"Invoice_{st.session_state['id']}.pdf")
+                pdf.output(file_path)
+
+                with open(file_path, "rb") as f:
+                    st.download_button(
+                        label="📄 Download Invoice",
+                        data=f.read(),
+                        file_name=f"Invoice_{st.session_state['id']}.pdf",
+                        mime="application/pdf"
+                    )
+
+                os.remove(file_path)

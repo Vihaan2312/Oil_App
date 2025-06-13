@@ -28,6 +28,7 @@ else:
 # Auto-fill phone number if name exists
 phone = ""
 if name in customer_names:
+    name_input = name
     phone = next(phone for phone, data in customer_data.items() if data["Name"] == name)
 
 # Phone number input (editable)
@@ -42,6 +43,7 @@ gq = st.number_input("Groundnut Quantity")
 mq = st.number_input("Mustard Quantity")
 sq = st.number_input("Sesame Quantity")
 aq = st.number_input("Almond Quantity")
+dc = st.number_input("Delivery Charge")
 
 st.divider()
 
@@ -56,7 +58,8 @@ df = pd.DataFrame([
     {"Oil": "Mustard", "Rate": "₹350/- per liter", "Quantity": mq, "Total": f"₹{mq*350}/-"},
     {"Oil": "Sesame", "Rate": "₹450/- per liter", "Quantity": sq, "Total": f"₹{sq*450}/-"},
     {"Oil": "Almond", "Rate": "₹625/- per 250ml", "Quantity": aq, "Total": f"₹{aq*2500}/-"},
-    {"Oil": "Total:", "Quantity": cq+gq+mq+sq+aq, "Total": f"₹{(aq*2500)+(cq*450)+(gq*350)+(mq*350)+(sq*450)}/-"}
+    {"Oil": "Delivery Charge", "Total": f"₹{dc}/-"},
+    {"Oil": "Total:", "Quantity": cq+gq+mq+sq+aq, "Total": f"₹{(aq*2500)+(cq*450)+(gq*350)+(mq*350)+(sq*450)+dc}/-"}
 ])
 st.write(df)
 
@@ -73,16 +76,17 @@ if st.button("Submit"):
         "GQ": gq,
         "MQ": mq,
         "SQ": sq,
+        "DC": dc,
         "Phone": phone,
         "Date": date_time,
-        "Name": name_input,
+        "Name": name,
         "Status": 1
     })
 
     # If new customer, add to "Profiles" using phone number as document ID
     if phone not in customer_phones:
         db.collection("Profiles").document(phone).set({
-            "Name": name_input,
+            "Name": name,
             "Phone no.": phone
         })
         st.success(f"🆕 New customer '{name_input}' added with Phone No. '{phone}'!")
