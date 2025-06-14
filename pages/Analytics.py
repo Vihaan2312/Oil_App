@@ -44,4 +44,22 @@ oil_df = pd.DataFrame(oil_sales.items(), columns=["Oil", "Total Liters Sold"])
 fig_oil = px.bar(oil_df, x="Oil", y="Total Liters Sold", title="🔹 Oil Sales Breakdown", text="Total Liters Sold")
 st.plotly_chart(fig_oil)
 
+# 🔻 ORDER STATUS OVERVIEW
+st.subheader("📦 Order Status Overview")
 
+# Map numeric statuses to labels
+status_labels = {1: "Ordered", 2: "Delivered", 3: "Paid"}
+df["Status Label"] = df["Status"].map(status_labels).fillna("Unknown")
+
+status_counts = df["Status Label"].value_counts().reset_index()
+status_counts.columns = ["Status", "Count"]
+
+fig_status = px.bar(
+    status_counts,
+    x="Status",
+    y="Count",
+    title="📊 Order Status Distribution",
+    text="Count",
+    color="Status"
+)
+st.plotly_chart(fig_status)

@@ -75,7 +75,7 @@ if st.session_state["update"]:
                 {"Oil": "Almond", "Rate": "₹2500", "Quantity": rec.get("AQ", 0)},
             ])
 
-            edited_df = st.data_editor(df, key="order_edit", column_config={"Quantity": {"editable": True}})
+            edited_df = st.data_editor(df, key="order_edit", column_config={"Quantity": {"editable": True}}, use_container_width=True)
             dc = st.number_input("Delivery Charge", value=rec.get("DC"), step=1)
 
             # Calculate total price
@@ -86,7 +86,7 @@ if st.session_state["update"]:
             total_quantity = edited_df["Quantity"].sum()
             total_df = pd.DataFrame([{"Oil": "Total", "Quantity": total_quantity,"Total": f"₹{total_price}/-"}])
             edited_df = pd.concat([edited_df, total_df], ignore_index=True)
-            st.dataframe(edited_df)
+            st.dataframe(edited_df, use_container_width=True)
 
             # Save button updates Firestore
             if st.button("Save"):
@@ -257,7 +257,7 @@ if st.session_state["view"]:
             total_row = pd.DataFrame([{"Oil": "Total", "Rate": "", "Quantity": total_quantity, "Total": f"₹{total_price}/-"}])
             df = pd.concat([df, total_row], ignore_index=True)
 
-            st.dataframe(df)
+            st.dataframe(df, use_container_width=True)
 
             # Buttons to close or update
             # Buttons to close or update side by side

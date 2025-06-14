@@ -61,7 +61,7 @@ df = pd.DataFrame([
     {"Oil": "Delivery Charge", "Total": f"₹{dc}/-"},
     {"Oil": "Total:", "Quantity": cq+gq+mq+sq+aq, "Total": f"₹{(aq*2500)+(cq*450)+(gq*350)+(mq*350)+(sq*450)+dc}/-"}
 ])
-st.write(df)
+st.write(df, use_container_width=True)
 
 # Submit button logic
 if st.button("Submit"):
