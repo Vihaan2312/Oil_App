@@ -1,6 +1,8 @@
 import streamlit as st
 from google.cloud import firestore
 import pandas as pd
+import io
+from datetime import datetime
 
 # Firestore connection
 db = firestore.Client.from_service_account_json("Firestore.json")
@@ -38,7 +40,19 @@ df = pd.DataFrame(customer_data)
 
 st.subheader("📋 Customer List")
 
-# Add view button to each row
+# 👉 Excel Export of Customer List
+excel_buffer = io.BytesIO()
+with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+    df.to_excel(writer, index=False, sheet_name='Customers')
+
+st.download_button(
+    label="📥 Download Customer List as Excel",
+    data=excel_buffer.getvalue(),
+    file_name=f"Customer_List_{datetime.now().date()}.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+# Show each customer with a "View Orders" button
 for i, row in df.iterrows():
     col1, col2, col3, col4 = st.columns([3, 3, 2, 2])
     col1.write(row["Name"])
@@ -54,14 +68,31 @@ for i, row in df.iterrows():
             order["Status"] = status_map.get(order.get("Status"), "Unknown")
             order["Name"] = row["Name"]
             order["Phone"] = row["Phone"]
-            order["GA"] = order.get("GQ", 0) * 350
-            order["MA"] = order.get("MQ", 0) * 350
-            order["CA"] = order.get("CQ", 0) * 450
-            order["SA"] = order.get("SQ", 0) * 450
-            order["AA"] = order.get("AQ", 0) * 2500
-            order["Total"] = (
-                order["GA"] + order["MA"] + order["CA"] + order["SA"] + order["AA"]
-            )
+
+            gq = order.get("GQ", 0)
+            mq = order.get("MQ", 0)
+            cq = order.get("CQ", 0)
+            sq = order.get("SQ", 0)
+            aq = order.get("AQ", 0)
+            dc = order.get("DC", 0)
+
+            ga = gq * 350
+            ma = mq * 350
+            ca = cq * 450
+            sa = sq * 450
+            aa = aq * 2500
+            total = ga + ma + ca + sa + aa
+
+            order.update({
+                "GA": f"₹{ga}/-",
+                "MA": f"₹{ma}/-",
+                "CA": f"₹{ca}/-",
+                "SA": f"₹{sa}/-",
+                "AA": f"₹{aa}/-",
+                "DC": dc,
+                "Total": f"₹{total}/-"
+            })
+
             orders.append(order)
 
         if orders:
@@ -70,17 +101,19 @@ for i, row in df.iterrows():
             order_df["Order Date"] = order_df["Date"].dt.date
             order_df["Order Time"] = order_df["Date"].dt.time
 
-            final_cols = [
+            order_df = order_df.sort_values(by="Date", ascending=False).head(10)
+
+            cols_order = [
                 "Order ID", "Name", "Phone", "Order Date", "Order Time", "Status",
                 "GQ", "GA", "MQ", "MA", "CQ", "CA", "SQ", "SA", "AQ", "AA", "DC", "Total"
             ]
-            for col in final_cols:
+            for col in cols_order:
                 if col not in order_df.columns:
                     order_df[col] = 0
 
-            order_df = order_df[final_cols]
+            order_df = order_df[cols_order]
 
-            st.markdown(f"#### 🧾 Orders by {row['Name']} ({row['Phone']})")
+            st.markdown(f"#### 🧾 Last 10 Orders by {row['Name']} ({row['Phone']})")
             st.dataframe(order_df, use_container_width=True)
         else:
             st.info("No orders found for this customer.")
