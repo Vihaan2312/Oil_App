@@ -3,59 +3,75 @@ from google.cloud import firestore
 import pandas as pd
 import datetime as dt
 
+# --- Firestore Setup ---
 db = firestore.Client.from_service_account_json("Firestore.json")
 
-# Fetch oil rates dynamically
+# --- Fetch Rates Dynamically ---
 rate_docs = db.collection("Rates").stream()
 rates = {doc.id: doc.to_dict().get("Rate", 0) for doc in rate_docs}
 oil_names = list(rates.keys())
 
-# Fetch customer data
+# --- Fetch Customer Profiles ---
 profiles_ref = db.collection("Profiles").stream()
 customer_data = {doc.id: doc.to_dict() for doc in profiles_ref}
 customer_names = [data["Name"] for data in customer_data.values()]
 customer_phones = list(customer_data.keys())
 
-# Name input with suggestion
+# --- Page Title ---
+st.set_page_config(page_title="🛢️ New Order Entry", page_icon="🛒", layout="centered")
+st.title("🛒 Atulit Pure Cold Pressed Oil - New Order")
+st.caption("Quickly place a customer order and auto-fill details.")
+
+# --- Customer Name Input with Suggestions ---
+st.subheader("👤 Customer Details")
+
 name_input = st.text_input("Enter Customer Name")
 matching_names = [n for n in customer_names if name_input.lower() in n.lower()] if name_input else customer_names
+
 if matching_names and name_input:
-    name = st.selectbox("Select or continue typing", options=[f"{name_input}(Typed)"] + matching_names, index=0)
+    name = st.selectbox("Select or continue typing", options=[f"{name_input} (Typed)"] + matching_names, index=0)
+    if name.endswith("(Typed)"):
+        name = name_input
 else:
     name = name_input
 
-# Auto-fill phone
+# --- Auto-fill Phone ---
 phone = ""
 if name in customer_names:
     phone = next(phone for phone, data in customer_data.items() if data["Name"] == name)
-phone = st.text_input("Phone no.", value=phone)
+phone = st.text_input("📞 Phone Number", value=phone)
 
-# Date and time
-date = st.date_input("Date")
-time = st.time_input("Time")
+# --- Date and Time ---
+st.subheader("📅 Order Date & Time")
+date = st.date_input("Date", value=dt.date.today())
+time = st.time_input("Time", value=dt.datetime.now().time())
 
-# Dynamic oil inputs
-st.subheader("🛒 Oil Order Details")
+# --- Oil Order Section ---
+st.subheader("🛢️ Oil Order Details")
 quantities = {}
 amounts = {}
+
 for oil in oil_names:
-    qty = st.number_input(f"{oil} Quantity (L)", min_value=0.0, step=0.5, key=oil)
+    qty = st.number_input(f"{oil} Quantity (Litres)", min_value=0.0, step=0.5, key=oil)
     quantities[oil] = qty
     amounts[oil] = qty * rates[oil]
 
-# Delivery charge
-dc = st.number_input("Delivery Charge (₹)", step=10.0)
+# --- Delivery Charge ---
+dc = st.number_input("🚚 Delivery Charge (Rs.)", min_value=0.0, step=10.0)
 
-# Order summary
+# --- Order Summary ---
 st.divider()
-st.write("**Name:**", name)
-st.write("**Phone number:**", phone)
-st.write("**Date & Time:**", f"{date} {time}")
+st.subheader("📊 Order Summary")
 
-# Summary table
+st.write(f"**👤 Name:** {name}")
+st.write(f"**📞 Phone Number:** {phone}")
+st.write(f"**🗓️ Date & Time:** {date} {time}")
+
+# --- Summary Table ---
 summary = []
 grand_total = 0
 total_liters = 0
+
 for oil in oil_names:
     rate = rates[oil]
     qty = quantities[oil]
@@ -64,42 +80,49 @@ for oil in oil_names:
     total_liters += qty
     summary.append({
         "Oil": oil,
-        "Rate (₹/L)": f"₹{rate}/-",
-        "Quantity (L)": qty,
-        "Total (₹)": f"₹{total}/-"
+        "Rate (Rs./Litre)": f"Rs. {rate}/-",
+        "Quantity (Litre)": qty,
+        "Total (Rs.)": f"Rs. {total}/-"
     })
 
-summary.append({"Oil": "Delivery Charge", "Total (₹)": f"₹{dc}/-"})
-summary.append({"Oil": "Total", "Quantity (L)": total_liters, "Total (₹)": f"₹{grand_total + dc}/-"})
+# Add delivery charge and grand total
+summary.append({"Oil": "🚚 Delivery Charge", "Total (Rs.)": f"Rs. {dc}/-"})
+summary.append({"Oil": "💰 Total", "Quantity (Litre)": total_liters, "Total (Rs.)": f"Rs. {grand_total + dc}/-"})
 
-st.write(pd.DataFrame(summary), use_container_width=True)
+st.dataframe(pd.DataFrame(summary), use_container_width=True)
 
-# Submit button
-if st.button("Submit"):
-    date_time = dt.datetime.combine(date, time)
-    new_id = max([int(i.id) for i in db.collection("Orders").stream()] + [0]) + 1
+# --- Submit Button ---
+st.divider()
+if st.button("✅ Submit Order"):
+    if not name or not phone:
+        st.error("⚠️ Please enter both Customer Name and Phone Number.")
+    else:
+        date_time = dt.datetime.combine(date, time)
 
-    order_data = {
-        "Phone": phone,
-        "Name": name,
-        "Date": date_time,
-        "DC": dc,
-        "Status": 1,
-        "TotalAmount": round(grand_total + dc, 2)  # Store total with delivery
-    }
+        existing_orders = db.collection("Orders").stream()
+        new_id = max([int(doc.id) for doc in existing_orders] + [0]) + 1
 
-    # Add quantities and amounts dynamically
-    for oil in oil_names:
-        order_data[oil] = quantities[oil]  # Quantity
-        order_data[f"{oil}_Amount"] = round(amounts[oil], 2)  # Total amount per oil
-
-    db.collection("Orders").document(str(new_id)).set(order_data)
-
-    if phone not in customer_phones:
-        db.collection("Profiles").document(phone).set({
+        order_data = {
+            "Phone": phone,
             "Name": name,
-            "Phone no.": phone
-        })
-        st.success(f"🆕 New customer '{name}' added!")
+            "Date": date_time,
+            "DC": dc,
+            "Status": 1,
+            "TotalAmount": round(grand_total + dc, 2)
+        }
 
-    st.success("🎉 Order submitted successfully!")
+        for oil in oil_names:
+            order_data[oil] = quantities[oil]
+            order_data[f"{oil}_Amount"] = round(amounts[oil], 2)
+
+        db.collection("Orders").document(str(new_id)).set(order_data)
+
+        if phone not in customer_phones:
+            db.collection("Profiles").document(phone).set({
+                "Name": name,
+                "Phone no.": phone
+            })
+            st.success(f"🆕 New customer '{name}' added to profiles!")
+
+        st.success(f"🎉 Order #{new_id} submitted successfully!")
+
