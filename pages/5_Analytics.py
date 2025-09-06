@@ -4,7 +4,12 @@ import pandas as pd
 import plotly.express as px
 import json
 
-db = firestore.Client.from_service_account_json("Firestore.json")
+# Firestore Init
+creds = st.secrets["firestore"]
+st.write(creds)
+db = firestore.Client.from_service_account_info(dict(creds))
+
+st.set_page_config(page_title=" Sales Analytics Dashboard", layout="wide", page_icon="📊")
 
 st.title("📊 Sales Analytics Dashboard")
 

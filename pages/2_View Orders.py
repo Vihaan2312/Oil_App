@@ -11,7 +11,9 @@ st.title("🛢️ Atulit Pure Cold Pressed Oil - Order Management")
 st.caption("Easily track, edit, and export your oil orders.")
 
 # Firestore Init
-db = firestore.Client.from_service_account_json("Firestore.json")
+creds = st.secrets["firestore"]
+st.write(creds)
+db = firestore.Client.from_service_account_info(dict(creds))
 
 # Session State
 if "id" not in st.session_state:

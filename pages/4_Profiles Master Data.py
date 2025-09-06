@@ -4,8 +4,10 @@ import pandas as pd
 import io
 from datetime import datetime
 
-# Firestore connection
-db = firestore.Client.from_service_account_json("Firestore.json")
+# Firestore Init
+creds = st.secrets["firestore"]
+st.write(creds)
+db = firestore.Client.from_service_account_info(dict(creds))
 
 st.title("👥 Customer Profiles")
 

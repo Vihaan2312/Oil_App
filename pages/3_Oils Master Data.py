@@ -6,8 +6,10 @@ import time
 st.set_page_config(page_title="🛢️ Master Oil Rates", layout="wide")
 st.title("🛢️ Master Oil Rates")
 
-# Firestore setup
-db = firestore.Client.from_service_account_json("Firestore.json")
+# Firestore Init
+creds = st.secrets["firestore"]
+st.write(creds)
+db = firestore.Client.from_service_account_info(dict(creds))
 
 # 🔄 Fetch oil rates from Firestore
 def fetch_rates():
