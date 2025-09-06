@@ -5,7 +5,6 @@ import datetime as dt
 
 # Firestore Init
 creds = st.secrets["firestore"]
-st.write(creds)
 db = firestore.Client.from_service_account_info(dict(creds))
 
 # --- Fetch Rates Dynamically ---

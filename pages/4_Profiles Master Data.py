@@ -6,7 +6,6 @@ from datetime import datetime
 
 # Firestore Init
 creds = st.secrets["firestore"]
-st.write(creds)
 db = firestore.Client.from_service_account_info(dict(creds))
 
 st.title("👥 Customer Profiles")
