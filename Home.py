@@ -5,8 +5,9 @@ import datetime as dt
 # Set the page config for admins
 st.set_page_config(page_title="Admin Home - Atulit Oil", page_icon="🛠️")
 
-# Firestore client
-db = firestore.Client.from_service_account_json("Firestore.json")
+# Firestore Init
+creds = st.secrets["firestore"]
+db = firestore.Client.from_service_account_info(dict(creds))
 
 # Title
 st.title("🛠️ Admin Dashboard - Atulit Oil")
