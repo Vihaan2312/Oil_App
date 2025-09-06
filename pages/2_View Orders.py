@@ -12,7 +12,6 @@ st.caption("Easily track, edit, and export your oil orders.")
 
 # Firestore Init
 creds = st.secrets["firestore"]
-st.write(creds)
 db = firestore.Client.from_service_account_info(dict(creds))
 
 # Session State
