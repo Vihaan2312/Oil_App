@@ -7,3 +7,4 @@ fpdf
 xlsxwriter
 plotly.express
 firebase_admin
+pyrebase4
