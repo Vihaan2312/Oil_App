@@ -8,3 +8,4 @@ xlsxwriter
 plotly.express
 firebase_admin
 pyrebase4
+pkg_resources
