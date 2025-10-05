@@ -2,6 +2,17 @@ import streamlit as st
 from google.cloud import firestore
 import pandas as pd
 import datetime as dt
+from login_sidebar import show_sidebar
+
+st.set_page_config(page_title="🛢️ New Order Entry", page_icon="🛒", layout="centered")
+
+# 🔐 Always show login sidebar
+show_sidebar()
+
+# --- LOGIN WALL ---
+if "user" not in st.session_state:
+    st.warning("⚠️ Please log in to access this page.")
+    st.stop()  # stops the rest of the script from running
 
 # Firestore Init
 creds = st.secrets["firestore"]
@@ -19,7 +30,6 @@ customer_names = [data["Name"] for data in customer_data.values()]
 customer_phones = list(customer_data.keys())
 
 # --- Page Title ---
-st.set_page_config(page_title="🛢️ New Order Entry", page_icon="🛒", layout="centered")
 st.title("🛒 Atulit Pure Cold Pressed Oil - New Order")
 st.caption("Quickly place a customer order and auto-fill details.")
 

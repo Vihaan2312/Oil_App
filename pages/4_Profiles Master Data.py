@@ -3,6 +3,17 @@ from google.cloud import firestore
 import pandas as pd
 import io
 from datetime import datetime
+from login_sidebar import show_sidebar
+
+st.set_page_config(page_title="Customer Master Data", page_icon="👥", layout="wide")
+
+# 🔐 Always show login sidebar
+show_sidebar()
+
+# --- LOGIN WALL ---
+if "user" not in st.session_state:
+    st.warning("⚠️ Please log in to access this page.")
+    st.stop()  # stops the rest of the script from running
 
 # Firestore Init
 creds = st.secrets["firestore"]
@@ -38,8 +49,6 @@ for doc in profiles_ref:
     })
 
 df = pd.DataFrame(customer_data)
-
-st.subheader("📋 Customer List")
 
 # 👉 Excel Export of Customer List
 excel_buffer = io.BytesIO()

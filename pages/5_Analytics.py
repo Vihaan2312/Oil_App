@@ -3,12 +3,21 @@ from google.cloud import firestore
 import pandas as pd
 import plotly.express as px
 import json
+from login_sidebar import show_sidebar
+
+st.set_page_config(page_title=" Sales Analytics Dashboard", layout="wide", page_icon="📊")
+
+# 🔐 Always show login sidebar
+show_sidebar()
+
+# --- LOGIN WALL ---
+if "user" not in st.session_state:
+    st.warning("⚠️ Please log in to access this page.")
+    st.stop()  # stops the rest of the script from running
 
 # Firestore Init
 creds = st.secrets["firestore"]
 db = firestore.Client.from_service_account_info(dict(creds))
-
-st.set_page_config(page_title=" Sales Analytics Dashboard", layout="wide", page_icon="📊")
 
 st.title("📊 Sales Analytics Dashboard")
 
