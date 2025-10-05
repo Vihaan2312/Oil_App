@@ -18,7 +18,6 @@ if "user" not in st.session_state:
     st.stop()  # stops the rest of the script from running
 
 # Streamlit Config
-st.set_page_config(page_title="Order Management", page_icon="🛒", layout="wide")
 st.title("🛢️ Atulit Pure Cold Pressed Oil - Order Management")
 st.caption("Easily track, edit, and export your oil orders.")
 
