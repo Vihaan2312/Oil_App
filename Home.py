@@ -8,6 +8,10 @@ st.set_page_config(page_title="Admin Home - Atulit Oil", page_icon="🛠️")
 # 🔐 Always show login sidebar
 show_sidebar()
 
+params = st.experimental_get_query_params()
+if params.get("logged_in") == ["true"]:
+    st.experimental_set_query_params()  # clear it
+
 # --- LOGIN WALL ---
 if "user" not in st.session_state:
     st.warning("⚠️ Please log in to access this page.")
