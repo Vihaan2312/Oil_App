@@ -58,7 +58,7 @@ def show_sidebar():
                 if st.button("Login"):
                     if email and password:
                         if login(email.strip(), password):
-                            st.experimental_rerun()
+                            st.rerun()
 
             with tab2:
                 new_email = st.text_input("New Email", key="signup_email")
@@ -78,4 +78,4 @@ def show_sidebar():
             st.success(f"✅ Logged in as {user.get('email', 'User')}")
             if st.button("Logout"):
                 logout()
-                st.experimental_rerun()
+                st.rerun()
