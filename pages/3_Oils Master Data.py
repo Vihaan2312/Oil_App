@@ -10,9 +10,6 @@ st.set_page_config(page_title="🛢️ Master Oil Rates", layout="wide")
 # 🔐 Always show login sidebar
 show_sidebar()
 
-params = st.experimental_get_query_params()
-if params.get("logged_in") == ["true"]:
-    st.experimental_set_query_params()  # clear it
 
 # --- LOGIN WALL ---
 if "user" not in st.session_state:
