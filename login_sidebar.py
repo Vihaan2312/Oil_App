@@ -1,6 +1,6 @@
 # login_sidebar.py
 import streamlit as st
-import pyrebase
+import pyrebase4 as pyrebase
 
 # Firebase config
 firebaseConfig = st.secrets["authentication"]
