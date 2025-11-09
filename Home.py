@@ -2,6 +2,7 @@ import streamlit as st
 from google.cloud import firestore
 import datetime as dt
 from login_sidebar import show_sidebar
+import Database as mdb
 
 st.set_page_config(page_title="Admin Home - Atulit Oil", page_icon="🛠️")
 
@@ -13,9 +14,7 @@ if "user" not in st.session_state:
     st.warning("⚠️ Please log in to access this page.")
     st.stop()  # stops the rest of the script from running
 
-# Firestore Init
-creds = st.secrets["firestore"]
-db = firestore.Client.from_service_account_info(dict(creds))
+db = mdb.init()
 
 # Title
 st.title("🛠️ Admin Dashboard - Atulit Oil")
@@ -28,9 +27,7 @@ st.markdown("---")
 # 🔹 Quick Stats
 st.subheader("📊 Quick Stats")
 
-# Load all orders
-orders = list(db.collection("Orders").stream())
-data = [doc.to_dict() for doc in orders]
+data = mdb.load()
 
 total_orders = len(data)
 today_orders = sum(1 for d in data if d.get("Date") and d["Date"].date() == dt.date.today())
