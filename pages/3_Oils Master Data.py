@@ -4,6 +4,7 @@ import pandas as pd
 import time
 import os
 from login_sidebar import show_sidebar
+import Database as mdb
 
 st.set_page_config(page_title="🛢️ Master Oil Rates", layout="wide")
 
@@ -18,9 +19,7 @@ if "user" not in st.session_state:
 
 st.title("🛢️ Master Oil Rates")
 
-# Firestore Init
-creds = st.secrets["firestore"]
-db = firestore.Client.from_service_account_info(dict(creds))
+db = mdb.init()
 
 # Ensure images folder exists
 if not os.path.exists("images"):

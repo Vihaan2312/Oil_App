@@ -4,6 +4,7 @@ import pandas as pd
 import io
 from datetime import datetime
 from login_sidebar import show_sidebar
+import Database as mdb
 
 st.set_page_config(page_title="Customer Master Data", page_icon="👥", layout="wide")
 
@@ -15,9 +16,7 @@ if "user" not in st.session_state:
     st.warning("⚠️ Please log in to access this page.")
     st.stop()  # stops the rest of the script from running
 
-# Firestore Init
-creds = st.secrets["firestore"]
-db = firestore.Client.from_service_account_info(dict(creds))
+db = mdb.init()
 
 st.title("👥 Customer Profiles")
 
@@ -29,7 +28,7 @@ status_map = {
 }
 
 # Fetch all customer profiles
-profiles_ref = db.collection("Profiles").stream()
+profiles_ref = mdb.pro_load()
 customer_data = []
 
 for doc in profiles_ref:

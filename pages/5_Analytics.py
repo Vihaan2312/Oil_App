@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.express as px
 import json
 from login_sidebar import show_sidebar
+import Database as mdb
 
 st.set_page_config(page_title=" Sales Analytics Dashboard", layout="wide", page_icon="📊")
 
@@ -15,22 +16,20 @@ if "user" not in st.session_state:
     st.warning("⚠️ Please log in to access this page.")
     st.stop()  # stops the rest of the script from running
 
-# Firestore Init
-creds = st.secrets["firestore"]
-db = firestore.Client.from_service_account_info(dict(creds))
+db = mdb.init()
+rates = mdb.oil_load()
 
 st.title("📊 Sales Analytics Dashboard")
 
 # Fetch all orders from Firestore
-orders_ref = db.collection("Orders").stream()
-orders = [order.to_dict() for order in orders_ref]
+orders = mdb.load()
 
 # Convert to DataFrame
 df = pd.DataFrame(orders)
 
 # Ensure columns exist
 df["Date"] = pd.to_datetime(df["Date"])
-df["Total Sales"] = (df["CQ"] * 450) + (df["GQ"] * 350) + (df["MQ"] * 350) + (df["SQ"] * 450) + (df["AQ"] * 2500)
+df["Total Sales"] = df["TotalAmount"]
 
 # Total Orders & Sales
 st.metric("📦 Total Orders", len(df))
@@ -42,13 +41,14 @@ fig = px.line(sales_over_time, x="Date", y="Total Sales", title="📅 Sales Over
 st.plotly_chart(fig)
 
 # Most Popular Oil
-oil_sales = {
-    "Coconut": df["CQ"].sum(),
-    "Groundnut": df["GQ"].sum(),
-    "Mustard": df["MQ"].sum(),
-    "Sesame": df["SQ"].sum(),
-    "Almond": df["AQ"].sum(),
-}
+a=0
+oil_sales = {}
+for oil in rates:
+    name = oil.id
+    for order in orders:
+        a=a+int(order[str(name)])   
+    oil_sales[name] = a
+    a=0
 popular_oil = max(oil_sales, key=oil_sales.get)
 st.metric("🏆 Most Popular Oil", popular_oil)
 

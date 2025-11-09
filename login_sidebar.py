@@ -50,7 +50,7 @@ def show_sidebar():
         st.title("🔐 Authentication")
 
         if not st.session_state.get("logged_in", False):
-            tab1, tab2, tab3 = st.tabs(["Login", "Signup", "Forgot Password"])
+            tab1, tab2 = st.tabs(["Login", "Forgot Password"])
 
             with tab1:
                 email = st.text_input("Email", key="login_email")
@@ -59,15 +59,7 @@ def show_sidebar():
                     if email and password:
                         if login(email.strip(), password):
                             st.rerun()
-
             with tab2:
-                new_email = st.text_input("New Email", key="signup_email")
-                new_pass = st.text_input("New Password", type="password", key="signup_pass")
-                if st.button("Create Account"):
-                    if new_email and new_pass:
-                        signup(new_email.strip(), new_pass)
-
-            with tab3:
                 reset_email = st.text_input("Enter your email", key="reset_email")
                 if st.button("Send Reset Email"):
                     if reset_email:

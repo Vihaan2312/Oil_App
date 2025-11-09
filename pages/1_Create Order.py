@@ -3,6 +3,7 @@ from google.cloud import firestore
 import pandas as pd
 import datetime as dt
 from login_sidebar import show_sidebar
+import Database as mdb
 
 st.set_page_config(page_title="🛢️ New Order Entry", page_icon="🛒", layout="centered")
 
@@ -14,9 +15,7 @@ if "user" not in st.session_state:
     st.warning("⚠️ Please log in to access this page.")
     st.stop()  # stops the rest of the script from running
 
-# Firestore Init
-creds = st.secrets["firestore"]
-db = firestore.Client.from_service_account_info(dict(creds))
+db = mdb.init()
 
 # --- Fetch Rates Dynamically ---
 rate_docs = db.collection("Rates").stream()
@@ -24,7 +23,7 @@ rates = {doc.id: doc.to_dict().get("Rate", 0) for doc in rate_docs}
 oil_names = list(rates.keys())
 
 # --- Fetch Customer Profiles ---
-profiles_ref = db.collection("Profiles").stream()
+profiles_ref = mdb.pro_load()
 customer_data = {doc.id: doc.to_dict() for doc in profiles_ref}
 customer_names = [data["Name"] for data in customer_data.values()]
 customer_phones = list(customer_data.keys())
