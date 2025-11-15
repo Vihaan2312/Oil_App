@@ -46,7 +46,10 @@ oil_sales = {}
 for oil in rates:
     name = oil.id
     for order in orders:
-        a=a+int(order[str(name)])   
+        try:
+            a=a+int(order[str(name)]) 
+        except:
+            a=a  
     oil_sales[name] = a
     a=0
 popular_oil = max(oil_sales, key=oil_sales.get)
