@@ -51,6 +51,9 @@ if name in customer_names:
     phone = next(phone for phone, data in customer_data.items() if data["Name"] == name)
 phone = st.text_input("📞 Phone Number", value=phone)
 
+# --- Address ----
+address = st.text_input("Address"   )
+
 # --- Date and Time ---
 st.subheader("📅 Order Date & Time")
 date = st.date_input("Date", value=dt.date.today())
@@ -76,6 +79,7 @@ st.subheader("📊 Order Summary")
 st.write(f"**👤 Name:** {name}")
 st.write(f"**📞 Phone Number:** {phone}")
 st.write(f"**🗓️ Date & Time:** {date} {time}")
+st.write(f"**📄 Address:** {address}")
 
 # --- Summary Table ---
 summary = []
@@ -117,6 +121,7 @@ if st.button("✅ Submit Order"):
             "Name": name,
             "Date": date_time,
             "DC": dc,
+            "Address": address,
             "Status": 1,
             "TotalAmount": round(grand_total + dc, 2)
         }

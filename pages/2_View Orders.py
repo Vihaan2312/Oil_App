@@ -48,6 +48,7 @@ if st.session_state["update"]:
         phone = st.text_input("📞 Phone", rec.get("Phone", ""))
         date = st.date_input("🗓️ Date", rec.get("Date").date() if rec.get("Date") else dt.date.today())
         time = st.time_input("⏰ Time", rec.get("Date").time() if rec.get("Date") else dt.datetime.now().time())
+        address = st.text_input("📄 Address", rec.get("Address", ""))
 
         status_dict = {1: "Ordered", 2: "Delivered", 3: "Payment Done"}
         current_status = rec.get("Status", 1)
@@ -81,7 +82,7 @@ if st.session_state["update"]:
         st.dataframe(pd.concat([edited_df, summary_df], ignore_index=True), use_container_width=True)
 
         if st.button("💾 Save Changes"):
-            update_data = {"Name": name, "Phone": phone, "Date": dt.datetime.combine(date, time), "DC": dc, "TotalAmount": total_amount}
+            update_data = {"Name": name, "Phone": phone, "Address": address, "Date": dt.datetime.combine(date, time), "DC": dc, "TotalAmount": total_amount}
             for _, row in edited_df.iterrows():
                 update_data[row["Oil"]] = int(row["Quantity"])
                 update_data[f"{row['Oil']}_Amount"] = int(row["Amount"])
@@ -100,6 +101,7 @@ elif st.session_state["view"]:
         st.write(f"👤 **Name:** {rec.get('Name', '')}")
         st.write(f"📞 **Phone:** {rec.get('Phone', '')}")
         st.write(f"🗓️ **Date:** {rec.get('Date').strftime('%Y-%m-%d %H:%M') if rec.get('Date') else 'N/A'}")
+        st.write(f"📄 **Address:** {rec.get('Address')}")
 
         status_dict = {1: "Ordered", 2: "Delivered", 3: "Payment Done"}
         current_status = rec.get("Status", 1)
@@ -113,14 +115,16 @@ elif st.session_state["view"]:
         oil_data = []
         for doc in db.collection("Rates").stream():
             oil = doc.id
-            qty = rec.get(oil, 0)
+            qty = rec.get(oil, 0.0)
             amount = rec.get(f"{oil}_Amount", 0)
-            rate_display = f"{round(amount/qty, 2)}" if qty else "N/A"
-            total_display = f"{amount}" if amount else "N/A"
+            rate_display = f"Rs. {int(round(amount/qty, 2))}" if qty else "N/A"
+            total_display = f"Rs. {int(amount)}" if amount else "Rs. 0"
             oil_data.append({"Oil": oil, "Rate": rate_display, "Quantity": qty, "Total": total_display})
 
-        dc = rec.get("DC", 0)
-        total_amount = rec.get("TotalAmount", 0)
+        delivery = int(rec.get("DC", 0))
+        dc =  f"Rs. {delivery}"
+        ta = int(rec.get("TotalAmount", 0))
+        total_amount = f"Rs. {ta}"
 
         summary_df = pd.DataFrame([
             {"Oil": "Delivery Charge", "Total": dc},
@@ -145,7 +149,7 @@ elif st.session_state["view"]:
             pdf = FPDF()
             pdf.add_page()
             pdf.set_font("Arial", size=12)
-            pdf.cell(200, 10, f"Invoice for Order {st.session_state['id']}", ln=True, align="C")
+            pdf.cell(200, 10, f"Invoice for Order", ln=True, align="C")
             pdf.ln(10)
             pdf.cell(200, 10, f"Name: {rec.get('Name', '')}", ln=True)
             pdf.cell(200, 10, f"Phone: {rec.get('Phone', '')}", ln=True)
@@ -162,17 +166,17 @@ elif st.session_state["view"]:
             pdf.set_font("Arial", size=12)
             for row in oil_data:
                 pdf.cell(50, 10, row["Oil"], 1)
-                pdf.cell(30, 10, f"Rs. {row['Rate']}", 1)
+                pdf.cell(30, 10, row['Rate'], 1)
                 pdf.cell(30, 10, str(row["Quantity"]), 1)
-                pdf.cell(40, 10, f"Rs. {row['Total']}", 1)
+                pdf.cell(40, 10, f"{row['Total']}", 1)
                 pdf.ln()
 
             pdf.cell(110, 10, "Delivery Charge", 1)
-            pdf.cell(40, 10, f"Rs. {dc}", 1)
+            pdf.cell(40, 10, f"{dc}", 1)
             pdf.ln()
             pdf.set_font("Arial", "B", 12)
             pdf.cell(110, 10, "Grand Total", 1)
-            pdf.cell(40, 10, f"Rs. {total_amount}", 1)
+            pdf.cell(40, 10, f"{total_amount}", 1)
 
             filepath = f"invoices/Invoice_{st.session_state['id']}.pdf"
             pdf.output(filepath)
