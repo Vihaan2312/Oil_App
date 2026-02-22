@@ -27,7 +27,7 @@ st.caption("Easily track, edit, and export your oil orders.")
 if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["firestore"]))
     firebase_admin.initialize_app(cred, {
-        "storageBucket": st.secrets["storage"][id]
+        "storageBucket": st.secrets["storage"]["id"]
     })
 
 def upload_to_firebase(file_bytes, filename):
