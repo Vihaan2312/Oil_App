@@ -5,7 +5,7 @@ import datetime as dt
 from login_sidebar import show_sidebar
 import Database as mdb
 
-st.set_page_config(page_title="🛢️ New Order Entry", page_icon="🛒", layout="centered")
+st.set_page_config(page_title="🛢️ Create Order", page_icon="🛒", layout="centered")
 
 # 🔐 Always show login sidebar
 show_sidebar()
@@ -29,31 +29,72 @@ customer_names = [data["Name"] for data in customer_data.values()]
 customer_phones = list(customer_data.keys())
 
 # --- Page Title ---
-st.title("🛒 Atulit Pure Cold Pressed Oil - New Order")
-st.caption("Quickly place a customer order and auto-fill details.")
+st.title("🛒 Atulit Pure Cold Pressed Oil - Create   Order")
+st.caption("Quickly place a customer order.")
 
-# --- Customer Name Input with Suggestions ---
+# --- Customer Details ---
 st.subheader("👤 Customer Details")
 
-name_input = st.text_input("Enter Customer Name")
-matching_names = [n for n in customer_names if name_input.lower() in n.lower()] if name_input else customer_names
+customer_type = st.radio(
+    "Select Customer Type",
+    ["Existing Customer", "New Customer"]
+)
 
-if matching_names and name_input:
-    name = st.selectbox("Select or continue typing", options=[f"{name_input} (Typed)"] + matching_names, index=0)
-    if name.endswith("(Typed)"):
-        name = name_input
+# --- EXISTING CUSTOMER ---
+if customer_type == "Existing Customer":
+
+    selected_name = st.selectbox(
+        "Select Customer",
+        options=customer_names
+    )
+
+    # Fetch profile data
+    profile = next(
+        data for data in customer_data.values()
+        if data["Name"] == selected_name
+    )
+
+    name = profile["Name"]
+
+    phone = next(
+        phone for phone, data in customer_data.items()
+        if data["Name"] == selected_name
+    )
+
+    saved_address = profile.get("Address", "")
+
+    # Locked fields
+    st.text_input("Customer Name", value=name, disabled=True)
+    st.text_input("📞 Phone Number", value=phone, disabled=True)
+
+    # Editable address
+    address = st.text_input("Address", value=saved_address)
+
+    # Checkbox to update profile
+    update_profile_address = st.checkbox("Save this address as the default for this customer")
+# --- NEW CUSTOMER ---
 else:
-    name = name_input
 
-# --- Auto-fill Phone ---
-phone = ""
-if name in customer_names:
-    phone = next(phone for phone, data in customer_data.items() if data["Name"] == name)
-phone = st.text_input("📞 Phone Number", value=phone)
+    name = st.text_input("Customer Name")
 
-# --- Address ----
-address = st.text_input("Address"   )
+    phone = st.text_input(
+        "📞 Phone Number",
+        max_chars=10,
+        placeholder="Enter 10 digit mobile number"
+    )
 
+    address = st.text_input("Address")
+
+    # Phone validation
+    phone_valid = False
+    if phone:
+        if not phone.isdigit():
+            st.error("Phone number should contain only digits.")
+        elif len(phone) != 10:
+            st.warning("Phone number must be exactly 10 digits.")
+        else:
+            phone_valid = True
+            
 # --- Date and Time ---
 st.subheader("📅 Order Date & Time")
 date = st.date_input("Date", value=dt.date.today())
@@ -132,12 +173,21 @@ if st.button("✅ Submit Order"):
 
         db.collection("Orders").document(str(new_id)).set(order_data)
 
-        if phone not in customer_phones:
+        # Update address in profile if checkbox selected
+        if customer_type == "Existing Customer" and update_profile_address:
+            db.collection("Profiles").document(phone).update({
+                "Address": address
+            })
+
+        # --- Update/Create Profile if New Customer selected ---
+        if customer_type == "New Customer":
+
             db.collection("Profiles").document(phone).set({
                 "Name": name,
-                "Phone no.": phone
+                "Phone no.": phone,
+                "Address": address
             })
-            st.success(f"🆕 New customer '{name}' added to profiles!")
+
+            st.success(f"👤 Customer profile saved/updated for {name}")
 
         st.success(f"🎉 Order #{new_id} submitted successfully!")
-

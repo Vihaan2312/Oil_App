@@ -74,6 +74,14 @@ if st.session_state["update"]:
             else dt.datetime.now().time())
         address = st.text_input("📄 Address", rec.get("Address", ""))
 
+        status_dict = {1: "Ordered", 2: "Delivered", 3: "Payment Done"} 
+        current_status = rec.get("Status", 1) 
+        st.write(f"📦 **Order Status:** {status_dict.get(current_status)}") 
+        if current_status != 3: 
+            if st.button(f"✅ Mark as {status_dict.get(current_status + 1)}"): 
+                db.collection("Orders").document(st.session_state["id"]).update({"Status": current_status + 1}) 
+                st.rerun()
+
         oil_data = []
         for doc in db.collection("Rates").stream():
             oil = doc.id
@@ -142,6 +150,14 @@ elif st.session_state["view"]:
             f"🗓️ **Date:** {rec.get('Date').strftime('%Y-%m-%d %H:%M') if rec.get('Date') else 'N/A'}"
         )
         st.write(f"📄 **Address:** {rec.get('Address')}")
+
+        status_dict = {1: "Ordered", 2: "Delivered", 3: "Payment Done"} 
+        current_status = rec.get("Status", 1) 
+        st.write(f"📦 **Order Status:** {status_dict.get(current_status)}") 
+        if current_status != 3: 
+            if st.button(f"✅ Mark as {status_dict.get(current_status + 1)}"): 
+                db.collection("Orders").document(st.session_state["id"]).update({"Status": current_status + 1}) 
+                st.rerun()
 
         oil_data = []
         for doc in db.collection("Rates").stream():
