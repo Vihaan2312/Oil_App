@@ -310,7 +310,7 @@ elif st.session_state["view"]:
                     "Content-Type":"application/json"
                 }
 
-                url = "https://graph.facebook.com/v22.0/855788854294250/messages"
+                url = "https://graph.facebook.com/v25.0/1157413830795066/messages"
                 requests.post(url,json=payload,headers=headers)
 
                 st.session_state["invoice_ready"] = False
