@@ -279,7 +279,7 @@ elif st.session_state["view"]:
 
                 payload = {
                     "messaging_product": "whatsapp",
-                    "to": "91" + rec.get("Phone"),
+                    "to": "919535972102",
                     "type": "template",
                     "template": {
                         "name": "invoice_tempelate",
